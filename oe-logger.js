@@ -50,8 +50,23 @@ function PecLogger(loggerImpl, debugLogger, name) {
   updateLogger(this, logLevel);
 }
 
+var convertArguments = function connvertToArray(allArguments) {
+  var args = [];
+  for(var i = 0; i < allArguments.length; i++) {
+    args.push(allArguments[i]);
+  }
+  return args;
+};
+
 var getMessage = function writeMessage(contextLogLevel, contextLogging, originalArguments) {
-  var callContext = originalArguments[0];
+  var args = convertArguments(originalArguments);
+  if (typeof args[0] === 'string') {
+    for (var count = args.length; count > 0; count--) {
+      args[count] = args[count -1];
+    }
+    args[0] = {};
+  }
+  var callContext = args[0];
   if ((callContext && callContext.ctx && callContext.ctx.logging && callContext.ctx.logging <= contextLogLevel) || (!contextLogging)) {
     var message = {context: {}, message: ''};
     var inputContext = callContext ? callContext : { ctxname: 'logContext', ctx: { remoteUser: 'system' } };
@@ -75,9 +90,10 @@ var getMessage = function writeMessage(contextLogLevel, contextLogging, original
     if (inputContext.txnId) {
       message.context.requestId = inputContext.txnId;
     }
-    for (var i = 1; i < originalArguments.length; i++) {
-      message.message = message.message + safeStringify(originalArguments[i]);
+    for (var i = 1; i < args.length; i++) {
+      message.message = message.message + ' ' + safeStringify(args[i]);
     }
+    message.message = message.message.trim();
     return message;
   }
   return '';
