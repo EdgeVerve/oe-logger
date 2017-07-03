@@ -83,12 +83,18 @@ var getMessage = function writeMessage(contextLogLevel, contextLogging, original
       if (inputContext.ctx.tenantId) {
         message.context.tenantId = inputContext.ctx.tenantId;
       }
+      if (inputContext.ctx.requestId) {
+        message.context.requestId = inputContext.ctx.requestId;
+      }
     }
     if (inputContext.accessToken) {
       message.context.accessToken = inputContext.accessToken;
     }
     if (inputContext.txnId) {
-      message.context.requestId = inputContext.txnId;
+      message.context.txnId = inputContext.txnId;
+      if (!message.context.requestId) {
+        message.context.requestId = inputContext.txnId;
+      }
     }
     for (var i = 1; i < args.length; i++) {
       message.message = message.message + ' ' + safeStringify(args[i]);
