@@ -87,9 +87,9 @@ var getMessage = function writeMessage(contextLogLevel, contextLogging, original
         message.context.requestId = inputContext.ctx.requestId;
       }
     }
-    if (inputContext.accessToken) {
-      message.context.accessToken = inputContext.accessToken;
-    }
+    // if (inputContext.accessToken) {
+    //   message.context.accessToken = inputContext.accessToken;
+    // }
     if (inputContext.txnId) {
       message.context.txnId = inputContext.txnId;
       if (!message.context.requestId) {
