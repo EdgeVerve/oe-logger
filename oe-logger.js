@@ -1,4 +1,4 @@
-/*
+﻿/*
 ©2015-2016 EdgeVerve Systems Limited (a fully owned Infosys subsidiary), Bangalore, India. All Rights Reserved.
 The EdgeVerve proprietary software program ("Program"), is protected by copyrights laws, international treaties and other pending or existing intellectual property rights in India, the United States and other countries.
 The Program may contain/reference third party or open source components, the rights to which continue to remain with the applicable third party licensors or the open source community as the case may be and nothing here transfers the rights to the third party and open source components, except as expressly permitted.
@@ -91,7 +91,7 @@ var getMessage = function writeMessage(contextLogLevel, contextLogging, original
     //   message.context.accessToken = inputContext.accessToken;
     // }
     if (inputContext.txnId) {
-      message.context.txnId = inputContext.txnId;
+      // message.context.txnId = inputContext.txnId;
       if (!message.context.requestId) {
         message.context.requestId = inputContext.txnId;
       }
