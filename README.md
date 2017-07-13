@@ -51,3 +51,16 @@ Following are error log statement ```log.error({}, "sample log");``` the output 
 
 [2016-01-01T11:28:29.126Z] ERROR: oe-logger on HOSTNAME: sample log (test)
 ```
+
+### Log Arguments
+
+The first argument for the log statements can be call context, which allow to log modelName, remoteUser, tenantId and requestId related to the request being sent. These values are being placed in options/context of the request which can be passed as first argument to log them for easy filtering of requests.
+
+Following is example to log a request details from the req-logging-filter, which passes the callContext as first argument for BaseUsers login API for admin user
+
+```
+log.debug(req.callContext, "Body: ", req.body);
+
+[2017-07-11T06:20:55.726Z] DEBUG: oe-logger on HOSTNAME: Body:  {"username":"admin","password":"admin"} (req-logging-filte
+r, BaseUsers, system, default, 18c036a0-6601-11e7-9cc9-fbb7d2f1cd6b)
+```
