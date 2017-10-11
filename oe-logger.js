@@ -273,7 +273,8 @@ var createInstance = function () {
         });
       } else if (curStream.type === 'out') {
         tempStreams.push({
-          stream: process.stdout
+          stream: process.stdout,
+          level: myLevel
         });
       } else {
         tempStreams.push(curStream);
