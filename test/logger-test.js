@@ -21,6 +21,7 @@ function doTest(loggerConfig) {
   log.warn(options, 'warn log');
   log.error(options, 'error log');
   log.fatal(options, 'fatal log');
+  log.fatal(options, new Error("error"));
 }
 
 var loggerConfig = {

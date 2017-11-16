@@ -109,7 +109,18 @@ function safeStringify(obj) {
   if (typeof obj === 'string') {
     return obj;
   }
+
   var stringified;
+
+  if (obj instanceof Error) {
+    try {
+      stringified = JSON.stringify(obj, Object.getOwnPropertyNames(obj));
+      return stringified;
+    } catch (e) {
+      return 'CIRCULAR OBJECT - ERROR';
+    }
+  }
+
   try {
     stringified = JSON.stringify(obj);
     return stringified;
@@ -262,7 +273,8 @@ var createInstance = function () {
         });
       } else if (curStream.type === 'out') {
         tempStreams.push({
-          stream: process.stdout
+          stream: process.stdout,
+          level: myLevel
         });
       } else {
         tempStreams.push(curStream);
