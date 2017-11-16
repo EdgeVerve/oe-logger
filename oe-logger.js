@@ -52,7 +52,7 @@ function PecLogger(loggerImpl, debugLogger, name) {
 
 var convertArguments = function connvertToArray(allArguments) {
   var args = [];
-  for(var i = 0; i < allArguments.length; i++) {
+  for (var i = 0; i < allArguments.length; i++) {
     args.push(allArguments[i]);
   }
   return args;
@@ -62,13 +62,13 @@ var getMessage = function writeMessage(contextLogLevel, contextLogging, original
   var args = convertArguments(originalArguments);
   if (typeof args[0] === 'string') {
     for (var count = args.length; count > 0; count--) {
-      args[count] = args[count -1];
+      args[count] = args[count - 1];
     }
     args[0] = {};
   }
   var callContext = args[0];
   if ((callContext && callContext.ctx && callContext.ctx.logging && callContext.ctx.logging <= contextLogLevel) || (!contextLogging)) {
-    var message = {context: {}, message: ''};
+    var message = { context: {}, message: '' };
     var inputContext = callContext ? callContext : { ctxname: 'logContext', ctx: { remoteUser: 'system' } };
     if (inputContext.modelName) {
       message.context.modelName = inputContext.modelName;
@@ -109,11 +109,28 @@ function safeStringify(obj) {
   if (typeof obj === 'string') {
     return obj;
   }
+
+  var stringified;
+
+  if (obj instanceof Error) {
+    try {
+      stringified = JSON.stringify(obj, Object.getOwnPropertyNames(obj));
+      return stringified;
+    } catch (e) {
+      return 'CIRCULAR OBJECT - ERROR';
+    }
+  }
+
   try {
-    var stringified = JSON.stringify(obj, Object.getOwnPropertyNames(obj));
+    stringified = JSON.stringify(obj);
     return stringified;
   } catch (e) {
-    return 'CIRCULAR OBJECT - ERROR';
+    try {
+      stringified = JSON.stringify(obj, Object.getOwnPropertyNames(obj));
+      return stringified;
+    } catch (er) {
+      return 'CIRCULAR OBJECT - ERROR';
+    }
   }
 }
 
@@ -256,7 +273,8 @@ var createInstance = function () {
         });
       } else if (curStream.type === 'out') {
         tempStreams.push({
-          stream: process.stdout
+          stream: process.stdout,
+          level: myLevel
         });
       } else {
         tempStreams.push(curStream);
