@@ -86,7 +86,7 @@ var getMessage = function writeMessage(contextLogLevel, contextLogging, original
   }
   var callContext = args[0];
   if ((callContext && callContext.ctx && callContext.ctx.logging && callContext.ctx.logging <= contextLogLevel) || (!contextLogging)) {
-    var message = { context: {}, message: '' };
+    var message = { context: {}, args: [] };
     var inputContext = callContext ? callContext : { ctxname: 'logContext', ctx: { remoteUser: 'system' } };
     if (inputContext.modelName) {
       message.context.modelName = inputContext.modelName;
@@ -114,43 +114,46 @@ var getMessage = function writeMessage(contextLogLevel, contextLogging, original
         message.context.requestId = inputContext.txnId;
       }
     }
-    for (var i = 1; i < args.length; i++) {
-      message.message = message.message + ' ' + safeStringify(args[i]);
-    }
-    message.message = message.message.trim();
+    args.shift();
+    message.args = args;
+    // for (var i = 1; i < args.length; i++) {
+    //     message.message = message.message + ' ' + safeStringify(args[i]);
+    // }
+    // message.message = message.message.trim();
+    message.context = !message.context ? 'server' : message.context;
     return message;
   }
   return '';
 };
 
-function safeStringify(obj) {
-  if (typeof obj === 'string') {
-    return obj;
-  }
+// function safeStringify(obj) {
+//   if (typeof obj === 'string') {
+//     return obj;
+//   }
 
-  var stringified;
+//   var stringified;
 
-  if (obj instanceof Error) {
-    try {
-      stringified = JSON.stringify(obj, Object.getOwnPropertyNames(obj));
-      return stringified;
-    } catch (e) {
-      return 'CIRCULAR OBJECT - ERROR';
-    }
-  }
+//   if (obj instanceof Error) {
+//     try {
+//       stringified = JSON.stringify(obj, Object.getOwnPropertyNames(obj));
+//       return stringified;
+//     } catch (e) {
+//       return 'CIRCULAR OBJECT - ERROR';
+//     }
+//   }
 
-  try {
-    stringified = JSON.stringify(obj);
-    return stringified;
-  } catch (e) {
-    try {
-      stringified = JSON.stringify(obj, Object.getOwnPropertyNames(obj));
-      return stringified;
-    } catch (er) {
-      return 'CIRCULAR OBJECT - ERROR';
-    }
-  }
-}
+//   try {
+//     stringified = JSON.stringify(obj);
+//     return stringified;
+//   } catch (e) {
+//     try {
+//       stringified = JSON.stringify(obj, Object.getOwnPropertyNames(obj));
+//       return stringified;
+//     } catch (er) {
+//       return 'CIRCULAR OBJECT - ERROR';
+//     }
+//   }
+// }
 
 var updateLogger = function updateLoggerFn(curLogger, level) {
   if (!curLogger) {
@@ -171,41 +174,41 @@ var updateLogger = function updateLoggerFn(curLogger, level) {
     curLogger.trace = function contextLogging() {
       var message = getMessage(levels.trace, 1, arguments);
       if (message) {
-        curLogger.logger.trace(message.context, message.message);
+        curLogger.logger.trace(message.context, ...message.args);
       }
     };
 
     curLogger.debug = function contextLogging() {
       var message = getMessage(levels.debug, 1, arguments);
       if (message) {
-        curLogger.logger.debug(message.context, message.message);
+        curLogger.logger.debug(message.context, ...message.args);
       }
     };
 
     curLogger.info = function contextLogging() {
       var message = getMessage(levels.info, 1, arguments);
       if (message) {
-        curLogger.logger.info(message.context, message.message);
+        curLogger.logger.info(message.context, ...message.args);
       }
     };
 
     curLogger.warn = function contextLogging() {
       var message = getMessage(levels.warn, 1, arguments);
       if (message) {
-        curLogger.logger.warn(message.context, message.message);
+        curLogger.logger.warn(message.context, ...message.args);
       }
     };
 
     curLogger.error = function contextLogging() {
       var message = getMessage(levels.error, 1, arguments);
       if (message) {
-        curLogger.logger.error(message.context, message.message);
+        curLogger.logger.error(message.context, ...message.args);
       }
     };
     curLogger.fatal = function contextLogging() {
       var message = getMessage(levels.fatal, 1, arguments);
       if (message) {
-        curLogger.logger.fatal(message.context, message.message);
+        curLogger.logger.fatal(message.context, ...message.args);
       }
     };
   }
@@ -213,42 +216,42 @@ var updateLogger = function updateLoggerFn(curLogger, level) {
   if (level <= levels.trace) {
     curLogger.trace = function trace() {
       var message = getMessage(levels.trace, 0, arguments);
-      curLogger.logger.trace(message.context, message.message);
+      curLogger.logger.trace(message.context, ...message.args);
     };
   }
 
   if (level <= levels.debug) {
     curLogger.debug = function debug() {
       var message = getMessage(levels.debug, 0, arguments);
-      curLogger.logger.debug(message.context, message.message);
+      curLogger.logger.debug(message.context, ...message.args);
     };
   }
 
   if (level <= levels.info) {
     curLogger.info = function info() {
       var message = getMessage(levels.info, 0, arguments);
-      curLogger.logger.info(message.context, message.message);
+      curLogger.logger.info(message.context, ...message.args);
     };
   }
 
   if (level <= levels.warn) {
     curLogger.warn = function warn() {
       var message = getMessage(levels.warn, 0, arguments);
-      curLogger.logger.warn(message.context, message.message);
+      curLogger.logger.warn(message.context, ...message.args);
     };
   }
 
   if (level <= levels.error) {
     curLogger.error = function error() {
       var message = getMessage(levels.error, 0, arguments);
-      curLogger.logger.error(message.context, message.message);
+      curLogger.logger.error(message.context, ...message.args);
     };
   }
 
   if (level <= levels.fatal) {
     curLogger.fatal = function fatal() {
       var message = getMessage(levels.fatal, 0, arguments);
-      curLogger.logger.fatal(message.context, message.message);
+      curLogger.logger.fatal(message.context, ...message.args);
     };
   }
 };
