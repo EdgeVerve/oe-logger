@@ -30,23 +30,6 @@ if (!config) {
   config = {};
 }
 
-function loadMainPackageJSON(attempts) {
-  attempts = attempts || 1;
-  if (attempts > 5) {
-    return null;
-  }
-  var mainPath = attempts === 1 ? './' : Array(attempts).join('../');
-  try {
-    return require.main.require(mainPath + 'package.json');
-  } catch (e) {
-    return loadMainPackageJSON(attempts + 1);
-  }
-}
-
-function getAppName() {
-  var packageJson = loadMainPackageJSON(1);
-  return packageJson && packageJson.name || 'oe-logger';
-}
 
 function PecLogger(loggerImpl, debugLogger, name) {
   this.logger = loggerImpl;
@@ -261,7 +244,7 @@ var createInstance = function () {
   var loggers = {};
   var bunyanOptions = {};
 
-  bunyanOptions.name = config.name || getAppName() || 'oe-logger';
+  bunyanOptions.name = config.name || 'oe-logger';
   config.logStreams = config.logStreams || [{ type: 'pretty' }];
   config.levels = config.levels || { default: 'info' };
   config.enableContextLogging = config.enableContextLogging || false;
