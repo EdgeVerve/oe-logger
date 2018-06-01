@@ -12,7 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "bunyan": "^1.8.10",
-    "bunyan-prettystream": "git+http://evgit/oecloud.io/bunyan-prettystream.git#v1.0.0",
+    "bunyan-prettystream": "git+https://github.com/EdgeVerve/bunyan-prettystream.git#v1.0.0",
     "gelf-stream": "^1.1.1",
     "debug": "2.2.0"
   },

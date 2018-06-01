@@ -6,7 +6,7 @@ Logger utility to log messages.
 
 Once the logger is added to package.json and installed, it can be used in following way
 
-```
+```js
 var logger = require("oe-logger");
 var log = logger("testlog");
 
@@ -17,13 +17,13 @@ log.error(context, arg1, arg2);
 log.fatal(context, arg1, arg2);
 ```
 
-The log functions accepts atleast two parameters, 
+The log functions accepts atleast two parameters,
     * first parameter is ```context``` which would be the callContext for the request
     * second parameter onward can be ```String``` or ```Object``` as they will be printed as a concatenated string.
 
 The logger requires a configuration to be passed as environment variable ```LOGGER_CONFIG```. In case, no value is passed, then it uses default config, which is
 
-```
+```json
 {"logStreams": [{"type": "pretty"}],"levels": {"default": "info"}, "enableContextLogging": false}
 ```
 
@@ -36,12 +36,12 @@ Support for three log streams is provided, which are
 
 Following are examples for configuring them for different log streams (standard output, pretty output, udp stream) respectively,
 
-```
-LOGGER_CONFIG={"logStreams":[{"type":"out"}],"levels":{"default":"debug"},"enableContextLogging":1}
+```sh
+export LOGGER_CONFIG={"logStreams":[{"type":"out"}],"levels":{"default":"debug"},"enableContextLogging":1}
 
-LOGGER_CONFIG={"logStreams":[{"type":"pretty"}],"levels":{"default":"debug"},"enableContextLogging":1}
+export LOGGER_CONFIG={"logStreams":[{"type":"pretty"}],"levels":{"default":"debug"},"enableContextLogging":1}
 
-LOGGER_CONFIG={"logStreams":[{"type":"udp", "host":"127.0.0.1", "port":"1234"}],"levels":{"default":"debug"},"enableContextLogging":1}
+export LOGGER_CONFIG={"logStreams":[{"type":"udp", "host":"127.0.0.1", "port":"1234"}],"levels":{"default":"debug"},"enableContextLogging":1}
 ```
 
 Following are error log statement ```log.error({}, "sample log");``` the output for out and pretty streams are as follows respectively:
@@ -58,9 +58,10 @@ The first argument for the log statements can be call context, which allow to lo
 
 Following is example to log a request details from the req-logging-filter, which passes the callContext as first argument for BaseUsers login API for admin user
 
-```
+```js
 log.debug(req.callContext, "Body: ", req.body);
+```
 
-[2017-07-11T06:20:55.726Z] DEBUG: oe-logger on HOSTNAME: Body:  {"username":"admin","password":"admin"} (req-logging-filte
-r, BaseUsers, system, default, 18c036a0-6601-11e7-9cc9-fbb7d2f1cd6b)
+```
+[2017-07-11T06:20:55.726Z] DEBUG: oe-logger on HOSTNAME: Body:  {"username":"admin","password":"admin"} (req-logging-filter, BaseUsers, system, default, 18c036a0-6601-11e7-9cc9-fbb7d2f1cd6b)
 ```
