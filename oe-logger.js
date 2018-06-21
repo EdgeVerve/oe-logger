@@ -46,7 +46,7 @@ function PecLogger(loggerImpl, debugLogger, name) {
   this.defaultContext = function () {
     return { ctxname: 'logContext', ctx: { remoteUser: 'system' } };
   };
-  logLevel = config.levels[name] || config.levels.default || 'debug';
+  logLevel = config.levels[name] || config.levels.default || 'error';
   logLevel = levels[logLevel];
   updateLogger(this, logLevel);
 }
@@ -246,7 +246,7 @@ var createInstance = function () {
 
   bunyanOptions.name = config.name || 'oe-logger';
   config.logStreams = config.logStreams || [{ type: 'pretty' }];
-  config.levels = config.levels || { default: 'debug' };
+  config.levels = config.levels || { default: 'error' };
   config.enableContextLogging = config.enableContextLogging || false;
 
   var tempStreams = [];
