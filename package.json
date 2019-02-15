@@ -11,10 +11,10 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "bunyan": "^1.8.10",
+    "bunyan": "^1.8.12",
     "bunyan-prettystream": "git+http://evgit/oecloud.io/bunyan-prettystream.git#master",
-    "gelf-stream": "^1.1.1",
-    "debug": "2.2.0"
+    "debug": "2.2.0",
+    "gelf-stream": "^1.1.1"
   },
   "devDependencies": {
     "babel-eslint": "^7.2.3",
