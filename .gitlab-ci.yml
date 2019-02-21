@@ -1,0 +1,49 @@
+stages:
+  - pre-build
+  - cleanup
+
+image: $REGISTRY/debian-node-oracle-docker
+variables:
+  REGISTRY: registry.${DOMAIN_NAME}
+
+before_script:
+  - export project=${CI_PROJECT_NAME//[^[:alnum:]]/}
+  - export group=${CI_PROJECT_NAMESPACE//[^[:alnum:]]/}
+  - export branch=${CI_BUILD_REF_NAME//[^[:alnum:]]/}
+  - export pipelineId=${CI_PIPELINE_ID//[^[:alnum:]]/}
+
+npminstall:
+  stage: pre-build
+  script:
+    - echo "Performing code style check..."
+    - status_eslint=0
+    - exit_status=0
+    - npm set progress=false
+    - npm config set registry http://10.188.25.62:9002/
+    - time npm install eslint babel-eslint --no-optional
+    - if npm run lint; then status_eslint=0; else status_eslint=1; fi
+    - if [ $status_eslint == 1 ]; then exit_status=1 && echo "esLint errors exist"; fi
+    - if [ $exit_status == 1 ]; then exit $exit_status; fi
+    - echo "Code style check done successfully"
+    - time npm install --no-optional
+    - echo "Node Modules Installed"
+    - npm config delete registry
+    - npm audit --json >vulnerabilities.json
+    - status_vulnerabilities='echo $?'
+    - npm audit
+    - if [ $status_vulnerabilities == 1 ]; then exit_status=1 && echo "Dependency vulnerabilities exist"; fi
+    - if [ $exit_status == 1 ]; then exit $exit_status; fi
+  artifacts:
+    untracked: true
+    expire_in: 2h
+    paths:
+      - node_modules/
+  tags:
+    - CEP_RUNNER
+
+lastcleanup:
+  stage: cleanup
+  script:
+    - echo "Finishing CI CD"
+  tags:
+    - CEP_RUNNER

@@ -1,12 +1,13 @@
-﻿/*
-©2015-2016 EdgeVerve Systems Limited (a fully owned Infosys subsidiary), Bangalore, India. All Rights Reserved.
-The EdgeVerve proprietary software program ("Program"), is protected by copyrights laws, international treaties and other pending or existing intellectual property rights in India, the United States and other countries.
-The Program may contain/reference third party or open source components, the rights to which continue to remain with the applicable third party licensors or the open source community as the case may be and nothing here transfers the rights to the third party and open source components, except as expressly permitted.
-Any unauthorized reproduction, storage, transmission in any form or by any means (including without limitation to electronic, mechanical, printing, photocopying, recording or  otherwise), or any distribution of this Program, or any portion of it, may result in severe civil and criminal penalties, and will be prosecuted to the maximum extent possible under the law.
-*/
+﻿/**
+ *
+ * ©2018-2019 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
+ * Bangalore, India. All Rights Reserved.
+ *
+ */
+
 var bunyan = require('bunyan');
 var gelfStream = require('gelf-stream');
-var PrettyStream = require('bunyan-prettystream');
+var PrettyStream = require('./prettystream.js');
 
 var levels = {
   'trace': 10,
@@ -139,7 +140,6 @@ var getMessage = function writeMessage(contextLogLevel, contextLogging, original
 // }
 
 
-
 var updateLogger = function updateLoggerFn(curLogger, level) {
   if (!curLogger) {
     // this shouldn't happen, but just incase for some reason curLogger is undefined
@@ -186,22 +186,19 @@ var updateLogger = function updateLoggerFn(curLogger, level) {
 
     curLogger.error = function contextLogging() {
       var message = getMessage(levels.error, 1, arguments);
-      if(message.args[0] instanceof Error){
-    
+      if (message.args[0] instanceof Error) {
         var error = message.args.shift();
 
-        if(!error.info) error.info = {};
+        if (!error.info) error.info = {};
 
-        Object.assign(error.info,message.context);
+        Object.assign(error.info, message.context);
 
-        if(message.args.length!=0){
-          curLogger.logger.error(error,message.args[0]);
+        if (message.args.length > 0) {
+          curLogger.logger.error(error, ...message.args);
+        } else {
+          curLogger.logger.error(error);
         }
-        else
-       curLogger.logger.error(error);
-        }
-
-        else if(message){
+      } else if (message) {
         curLogger.logger.error(message.context, ...message.args);
       }
     };
@@ -244,21 +241,19 @@ var updateLogger = function updateLoggerFn(curLogger, level) {
   if (level <= levels.error) {
     curLogger.error = function error() {
       var message = getMessage(levels.error, 0, arguments);
-      if(message.args[0] instanceof Error){
-		var error = message.args.shift();
-	  
-		if(!error.info) error.info = {};
-  
-		Object.assign(error.info,message.context);
-		if(message.args.length!=0){
-			curLogger.logger.error(error,message.args[0]);
-		}
-		else
-		curLogger.logger.error(error);   
-      }
-      
-      else if(message){
-      curLogger.logger.error(message.context, ...message.args);
+      if (message.args[0] instanceof Error) {
+        var error = message.args.shift();
+
+        if (!error.info) error.info = {};
+
+        Object.assign(error.info, message.context);
+        if (message.args.length > 0) {
+          curLogger.logger.error(error, ...message.args);
+        } else {
+          curLogger.logger.error(error);
+        }
+      } else if (message) {
+        curLogger.logger.error(message.context, ...message.args);
       }
     };
   }
@@ -318,13 +313,13 @@ var createInstance = function () {
     }
   }
   bunyanOptions.streams = tempStreams;
-  //bunyanOptions.serializers = errorLogger;
+  // bunyanOptions.serializers = errorLogger;
 
   function init() {
     // main logger - every other logger is a child of this one
     var logger = bunyan.createLogger(bunyanOptions);
-	// Adding serializer for error object
-    logger.addSerializers({err: errorLoggerSerializable}); 
+    // Adding serializer for error object
+    logger.addSerializers({err: errorLoggerSerializable});
     return {
       getLogger: function getLoggerFn() {
         return logger;
@@ -396,30 +391,28 @@ loggerFn.initialize = function (options) {
 // Serialize an Error object
 // (Core error properties are enumerable in node 0.4, not in 0.6).
 var errorLoggerSerializable = function (err) {
-  if (!err || !err.stack)
-      return err;
+  if (!err || !err.stack) {return err;}
   var obj = {
-      message: err.message,
-      name: err.name,
-      stack: getFullErrorStack(err),
-      code: err.code,
-      signal: err.signal,
-      info: err.info
-      
-  }
+    message: err.message,
+    name: err.name,
+    stack: getFullErrorStack(err),
+    code: err.code,
+    signal: err.signal,
+    info: err.info
+
+  };
   return obj;
 };
 
-function getFullErrorStack(ex)
-{
-    var ret = ex.stack || ex.toString();
-    if (ex.cause && typeof (ex.cause) === 'function') {
-        var cex = ex.cause();
-        if (cex) {
-            ret += '\nCaused by: ' + getFullErrorStack(cex);
-        }
+function getFullErrorStack(ex) {
+  var ret = ex.stack || ex.toString();
+  if (ex.cause && typeof (ex.cause) === 'function') {
+    var cex = ex.cause();
+    if (cex) {
+      ret += '\nCaused by: ' + getFullErrorStack(cex);
     }
-    return (ret);
+  }
+  return (ret);
 }
 
 module.exports = loggerFn;
