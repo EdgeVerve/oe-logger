@@ -32,3 +32,4 @@ out/
 *log-config.DevKarin.js
 *.suo
 *.sln
+package-lock.json
