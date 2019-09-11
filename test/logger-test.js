@@ -6,7 +6,6 @@
  */
 
 var log;
-var process = require('process');
 
 function doTest(loggerConfig) {
   if (loggerConfig) {
@@ -23,8 +22,8 @@ function doTest(loggerConfig) {
   log.fatal(options, 'fatal log');
   log.fatal(options, new Error('error'));
 
-  log.error(context,new Error('Error high'));
-  log.error(context,new Error('Error high with object'),obj);
+  log.error(context, new Error('Error high'));
+  log.error(context, new Error('Error high with object'), obj);
 }
 
 var loggerConfig = {
@@ -40,12 +39,12 @@ var loggerConfig = {
 
 var context = {
   ctx: {
-      requestId: "uiahyd8239ye89dh278g39d29",
-      logging: 10
+    requestId: "uiahyd8239ye89dh278g39d29",
+    logging: 10
   }
 }
 
-var obj = {"cat":"meow", "dog":"woof"};
+var obj = { "cat": "meow", "dog": "woof" };
 
 console.log('test without logger config env');
 doTest();

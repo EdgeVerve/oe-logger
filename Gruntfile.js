@@ -56,14 +56,11 @@ module.exports = function GruntConfig(grunt) {
         mochaOptions: ['--exit']
       },
       coverage: {
-        src: 'test/test.js',
+        src: 'test/*.js',
         options: {
           timeout: 60000,
           check: {
-            lines: 90,
-            statements: 90,
-            branches: 50,
-            functions: 100
+            lines: 65
           },
           reportFormats: ['lcov']
         }
