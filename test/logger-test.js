@@ -39,12 +39,12 @@ var loggerConfig = {
 
 var context = {
   ctx: {
-    requestId: "uiahyd8239ye89dh278g39d29",
+    requestId: 'uiahyd8239ye89dh278g39d29',
     logging: 10
   }
-}
+};
 
-var obj = { "cat": "meow", "dog": "woof" };
+var obj = { 'cat': 'meow', 'dog': 'woof' };
 
 console.log('test without logger config env');
 doTest();
