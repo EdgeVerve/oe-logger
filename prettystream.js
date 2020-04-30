@@ -1,28 +1,34 @@
-"use strict";
+'use strict';
 
 var Stream = require('stream').Stream;
 var util = require('util');
 var format = util.format;
 var http = require('http');
 
+/*
+  grey: actually yellow gray is 90
+*/
 var colors = {
-  'bold' : [1, 22],
-  'italic' : [3, 23],
-  'underline' : [4, 24],
-  'inverse' : [7, 27],
-  'white' : [37, 39],
-  'grey' : [33, 39], //actually yellow gray is 90
-  'black' : [30, 39],
-  'blue' : [34, 39],
-  'cyan' : [36, 39],
-  'green' : [32, 39],
-  'magenta' : [35, 39],
-  'red' : [31, 39],
-  'yellow' : [33, 39]
+  'bold': [1, 22],
+  'italic': [3, 23],
+  'underline': [4, 24],
+  'inverse': [7, 27],
+  'white': [37, 39],
+  'grey': [33, 39],
+  'black': [30, 39],
+  'blue': [34, 39],
+  'cyan': [36, 39],
+  'green': [32, 39],
+  'magenta': [35, 39],
+  'red': [31, 39],
+  'yellow': [33, 39]
 };
 
+/*
+  short, long, dev
+*/
 var defaultOptions = {
-  mode: 'long', //short, long, dev
+  mode: 'long',
   useColor: true
 };
 
@@ -36,12 +42,12 @@ var levelFromName = {
 };
 
 var colorFromLevel = {
-  10: 'green',     // TRACE
-  20: 'green',     // DEBUG
-  30: 'cyan',     // INFO
-  40: 'magenta',  // WARN
-  50: 'red',      // ERROR
-  60: 'inverse'  // FATAL
+  10: 'green',
+  20: 'green',
+  30: 'cyan',
+  40: 'magenta',
+  50: 'red',
+  60: 'inverse'
 };
 
 var nameFromLevel = {};
@@ -54,11 +60,11 @@ Object.keys(levelFromName).forEach(function (name) {
   upperPaddedNameFromLevel[lvl] = (name.length === 4 ? ' ' : '') + name.toUpperCase();
 });
 
-function PrettyStream(opts){
+function PrettyStream(opts) {
   var options = {};
 
-  if (opts){
-    Object.keys(opts).forEach(function(key){
+  if (opts) {
+    Object.keys(opts).forEach(function (key) {
       options[key] = {
         value: opts[key],
         enumerable: true,
@@ -76,15 +82,15 @@ function PrettyStream(opts){
   Stream.call(this);
 
   function stylize(str, color) {
-    if (!str){
+    if (!str) {
       return '';
     }
 
-    if (!config.useColor){
+    if (!config.useColor) {
       return str;
     }
 
-    if (!color){
+    if (!color) {
       color = 'white';
     }
 
@@ -100,35 +106,31 @@ function PrettyStream(opts){
     return '    ' + s.split(/\r?\n/).join('\n    ');
   }
 
-  function extractTime(rec){
+  function extractTime(rec) {
     var time = (typeof rec.time === 'object') ? rec.time.toISOString() : rec.time;
 
-    if ((config.mode === 'short' || config.mode === 'dev') && time[10] == 'T') {
+    if ((config.mode === 'short' || config.mode === 'dev') && time[10] === 'T') {
       return stylize(time.substr(11));
     }
     return stylize(time);
   }
 
-  function extractName(rec){
+  function extractName(rec) {
     var name =  rec.name;
 
     if (rec.component) {
       name += '/' + rec.component;
     }
 
-//    if (config.mode !== 'short' && config.mode !== 'dev'){
-//      name += '/' + rec.pid;
-//    }
-
     return name;
   }
 
-  function extractLevel(rec){
+  function extractLevel(rec) {
     var level = (upperPaddedNameFromLevel[rec.level] || 'LVL' + rec.level);
     return stylize(level, colorFromLevel[rec.level]);
   }
 
-  function extractSrc(rec){
+  function extractSrc(rec) {
     var src = '';
     if (rec.src && rec.src.file) {
       if (rec.src.func) {
@@ -140,19 +142,19 @@ function PrettyStream(opts){
     return stylize(src, 'green');
   }
 
-  function extractHost(rec){
+  function extractHost(rec) {
     return rec.hostname || '<no-hostname>';
   }
 
-  function isSingleLineMsg(rec){
+  function isSingleLineMsg(rec) {
     return rec.msg.indexOf('\n') === -1;
   }
 
-  function extractMsg(rec){
+  function extractMsg(rec) {
     return stylize(rec.msg, 'cyan');
   }
 
-  function extractReqDetail(rec){
+  function extractReqDetail(rec) {
     if (rec.req && typeof (rec.req) === 'object') {
       var req = rec.req;
       var headers = req.headers;
@@ -161,12 +163,12 @@ function PrettyStream(opts){
         req.method,
         req.url,
         req.httpVersion || '1.1',
-        (req.remoteAddress ? "\nremote: " + req.remoteAddress + ":" + req.remotePort : ""),
+        (req.remoteAddress ? '\nremote: ' + req.remoteAddress + ':' + req.remotePort : ''),
         (headers ?
-         '\n' + Object.keys(headers).map(function (h) {
-           return h + ': ' + headers[h];
-         }).join('\n') :
-         '')
+          '\n' + Object.keys(headers).map(function (h) {
+            return h + ': ' + headers[h];
+          }).join('\n') :
+          '')
       );
 
       if (req.body) {
@@ -183,7 +185,7 @@ function PrettyStream(opts){
       var extras = {};
 
       Object.keys(req).forEach(function (k) {
-        if (skip.indexOf(k) === -1){
+        if (skip.indexOf(k) === -1) {
           extras['req.' + k] = req[k];
         }
       });
@@ -217,12 +219,12 @@ function PrettyStream(opts){
       s += '\n' + res.trailer;
     }
 
-    var skip = ['header', 'statusCode', 'headers', 'body', 'trailer','context','ctx'];
+    var skip = ['header', 'statusCode', 'headers', 'body', 'trailer', 'context', 'ctx'];
 
     var extras = {};
 
     Object.keys(res).forEach(function (k) {
-      if (skip.indexOf(k) === -1){
+      if (skip.indexOf(k) === -1) {
         extras['res.' + k] = res[k];
       }
     });
@@ -233,16 +235,16 @@ function PrettyStream(opts){
     };
   }
 
-  function extractResDetail(rec){
+  function extractResDetail(rec) {
     if (rec.res && typeof (rec.res) === 'object') {
       return genericRes(rec.res);
     }
   }
 
-  function extractClientReqDetail(rec){
+  function extractClientReqDetail(rec) {
     if (rec.client_req && typeof (rec.client_req) === 'object') {
+      // eslint-disable-next-line
       var client_req = rec.client_req;
-
       var headers = client_req.headers;
       var hostHeaderLine = '';
       var s = '';
@@ -262,24 +264,24 @@ function PrettyStream(opts){
         client_req.httpVersion || '1.1',
         hostHeaderLine,
         (headers ?
-         Object.keys(headers).map(
-           function (h) {
-             return h + ': ' + headers[h];
-           }).join('\n') :
-         ''));
+          Object.keys(headers).map(
+            function (h) {
+              return h + ': ' + headers[h];
+            }).join('\n') :
+          ''));
 
       if (client_req.body) {
         s += '\n\n' + (typeof (client_req.body) === 'object' ?
-                       JSON.stringify(client_req.body, null, 2) :
-                       client_req.body);
+          JSON.stringify(client_req.body, null, 2) :
+          client_req.body);
       }
 
-      var skip = ['headers', 'url', 'httpVersion', 'body', 'trailers', 'method', 'remoteAddress', 'remotePort','context','ctx'];
+      var skip = ['headers', 'url', 'httpVersion', 'body', 'trailers', 'method', 'remoteAddress', 'remotePort', 'context', 'ctx'];
 
       var extras = {};
 
       Object.keys(client_req).forEach(function (k) {
-        if (skip.indexOf(k) === -1){
+        if (skip.indexOf(k) === -1) {
           extras['client_req.' + k] = client_req[k];
         }
       });
@@ -291,26 +293,26 @@ function PrettyStream(opts){
     }
   }
 
-  function extractClientResDetail(rec){
+  function extractClientResDetail(rec) {
     if (rec.client_res && typeof (rec.client_res) === 'object') {
       return genericRes(rec.client_res);
     }
   }
 
-  function extractError(rec){
+  function extractError(rec) {
     if (rec.err && rec.err.stack) {
       return rec.err.stack;
     }
   }
 
-  function extractCustomDetails(rec){
-    var skip = ['name', 'hostname', 'pid', 'level', 'component', 'msg', 'time', 'v', 'src', 'err', 'client_req', 'client_res', 'req', 'res','context','ctx'];
+  function extractCustomDetails(rec) {
+    var skip = ['name', 'hostname', 'pid', 'level', 'component', 'msg', 'time', 'v', 'src', 'err', 'client_req', 'client_res', 'req', 'res', 'context', 'ctx'];
 
     var details = [];
     var extras = {};
 
-    Object.keys(rec).forEach(function(key) {
-      if (skip.indexOf(key) === -1){
+    Object.keys(rec).forEach(function (key) {
+      if (skip.indexOf(key) === -1) {
         var value = rec[key];
         if (typeof value === 'undefined') value = '';
         var stringified = false;
@@ -319,8 +321,9 @@ function PrettyStream(opts){
           stringified = true;
         }
         if (value.indexOf('\n') !== -1 || value.length > 50) {
-          details.push(/*key + ':*/' ' + value);
-        } else if (!stringified && (value.indexOf(' ') != -1 ||  value.length === 0)){
+          // eslint-disable-next-line
+          details.push(/* ke  y + ':*/' ' + value);
+        } else if (!stringified && (value.indexOf(' ') !== -1 ||  value.length === 0)) {
           extras[key] = JSON.stringify(value);
         } else {
           extras[key] = value;
@@ -334,18 +337,19 @@ function PrettyStream(opts){
     };
   }
 
-  function applyDetails(results, details, extras){
-    if (results){
-      results.details.forEach(function(d){
+  function applyDetails(results, details, extras) {
+    if (results) {
+      results.details.forEach(function (d) {
         details.push(indent(d));
       });
-      Object.keys(results.extras).forEach(function(k){
-        extras.push(/*k + '=' + */results.extras[k]);
+      Object.keys(results.extras).forEach(function (k) {
+        // eslint-disable-next-line
+        extras.push(/* k + '=' + */results.extras[k]);
       });
     }
   }
 
-  this.formatRecord = function formatRecord(rec){
+  this.formatRecord = function formatRecord(rec) {
     var details = [];
     var extras = [];
 
@@ -356,19 +360,19 @@ function PrettyStream(opts){
     var src = extractSrc(rec);
 
     var msg = isSingleLineMsg(rec) ? extractMsg(rec) : '';
-    if (!msg){
+    if (!msg) {
       details.push(indent(extractMsg(rec)));
     }
 
     var error = extractError(rec);
-    if (error){
+    if (error) {
       details.push(indent(error));
     }
 
-    if (rec.req){ applyDetails(extractReqDetail(rec), details, extras); }
-    if (rec.res){ applyDetails(extractResDetail(rec), details, extras); }
-    if (rec.client_req){ applyDetails(extractClientReqDetail(rec), details, extras); }
-    if (rec.client_res){ applyDetails(extractClientResDetail(rec), details, extras); }
+    if (rec.req) { applyDetails(extractReqDetail(rec), details, extras); }
+    if (rec.res) { applyDetails(extractResDetail(rec), details, extras); }
+    if (rec.client_req) { applyDetails(extractClientReqDetail(rec), details, extras); }
+    if (rec.client_res) { applyDetails(extractClientResDetail(rec), details, extras); }
 
     applyDetails(extractCustomDetails(rec), details, extras);
 
@@ -378,7 +382,7 @@ function PrettyStream(opts){
       (details.length ? details.join(' ') + '\n' : ''), 'grey');
 
 
-    if (config.mode === 'long'){
+    if (config.mode === 'long') {
       return format('[%s] %s: %s on %s%s: %s%s\n%s',
         time,
         level,
@@ -389,7 +393,7 @@ function PrettyStream(opts){
         extras,
         details);
     }
-    if (config.mode === 'short'){
+    if (config.mode === 'short') {
       return format('[%s] %s %s: %s%s\n%s',
         time,
         level,
@@ -398,7 +402,7 @@ function PrettyStream(opts){
         extras,
         details);
     }
-    if (config.mode === 'dev'){
+    if (config.mode === 'dev') {
       return format('%s %s %s %s: %s%s\n%s',
         time,
         level,
@@ -413,16 +417,16 @@ function PrettyStream(opts){
 
 util.inherits(PrettyStream, Stream);
 
-PrettyStream.prototype.write = function write(data){
+PrettyStream.prototype.write = function write(data) {
   if (typeof data === 'string') {
     this.emit('data', this.formatRecord(JSON.parse(data)));
-  }else if(typeof data === 'object'){
+  } else if (typeof data === 'object') {
     this.emit('data', this.formatRecord(data));
   }
   return true;
 };
 
-PrettyStream.prototype.end = function end(){
+PrettyStream.prototype.end = function end() {
   this.emit('end');
   return true;
 };

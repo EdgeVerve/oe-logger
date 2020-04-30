@@ -1,4 +1,4 @@
-/**
+﻿/**
  *
  * ©2018-2019 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
  * Bangalore, India. All Rights Reserved.
@@ -139,6 +139,7 @@ var getMessage = function writeMessage(contextLogLevel, contextLogging, original
 //   }
 // }
 
+
 var updateLogger = function updateLoggerFn(curLogger, level) {
   if (!curLogger) {
     // this shouldn't happen, but just incase for some reason curLogger is undefined
@@ -185,7 +186,19 @@ var updateLogger = function updateLoggerFn(curLogger, level) {
 
     curLogger.error = function contextLogging() {
       var message = getMessage(levels.error, 1, arguments);
-      if (message) {
+      if (message.args[0] instanceof Error) {
+        var error = message.args.shift();
+
+        if (!error.info) error.info = {};
+
+        Object.assign(error.info, message.context);
+
+        if (message.args.length > 0) {
+          curLogger.logger.error(error, ...message.args);
+        } else {
+          curLogger.logger.error(error);
+        }
+      } else if (message) {
         curLogger.logger.error(message.context, ...message.args);
       }
     };
@@ -228,7 +241,20 @@ var updateLogger = function updateLoggerFn(curLogger, level) {
   if (level <= levels.error) {
     curLogger.error = function error() {
       var message = getMessage(levels.error, 0, arguments);
-      curLogger.logger.error(message.context, ...message.args);
+      if (message.args[0] instanceof Error) {
+        var error = message.args.shift();
+
+        if (!error.info) error.info = {};
+
+        Object.assign(error.info, message.context);
+        if (message.args.length > 0) {
+          curLogger.logger.error(error, ...message.args);
+        } else {
+          curLogger.logger.error(error);
+        }
+      } else if (message) {
+        curLogger.logger.error(message.context, ...message.args);
+      }
     };
   }
 
@@ -287,10 +313,13 @@ var createInstance = function () {
     }
   }
   bunyanOptions.streams = tempStreams;
+  // bunyanOptions.serializers = errorLogger;
 
   function init() {
     // main logger - every other logger is a child of this one
     var logger = bunyan.createLogger(bunyanOptions);
+    // Adding serializer for error object
+    logger.addSerializers({err: errorLoggerSerializable});
     return {
       getLogger: function getLoggerFn() {
         return logger;
@@ -358,5 +387,32 @@ loggerFn.FATAL_LEVEL = levels.fatal;
 loggerFn.initialize = function (options) {
   console.error('oe-logger initialize method is not used, use LOGGER_CONFIG environment variable instead');
 };
+
+// Serialize an Error object
+// (Core error properties are enumerable in node 0.4, not in 0.6).
+var errorLoggerSerializable = function (err) {
+  if (!err || !err.stack) {return err;}
+  var obj = {
+    message: err.message,
+    name: err.name,
+    stack: getFullErrorStack(err),
+    code: err.code,
+    signal: err.signal,
+    info: err.info
+
+  };
+  return obj;
+};
+
+function getFullErrorStack(ex) {
+  var ret = ex.stack || ex.toString();
+  if (ex.cause && typeof (ex.cause) === 'function') {
+    var cex = ex.cause();
+    if (cex) {
+      ret += '\nCaused by: ' + getFullErrorStack(cex);
+    }
+  }
+  return (ret);
+}
 
 module.exports = loggerFn;
